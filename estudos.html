@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerenciador de Estudos</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .materia { margin-bottom: 20px; }
+    .progress { display: flex; gap: 5px; }
+    .box { width: 30px; height: 30px; border: 1px solid #000; display: inline-block; cursor: pointer; }
+    .box.completed { background-color: green; }
+  </style>
+</head>
+<body>
+  <h1>Gerenciador de Estudos</h1>
+
+  <form id="add-materia-form">
+    <input type="text" id="materia" placeholder="Nome da matéria" required>
+    <input type="number" id="horas" placeholder="Horas de estudo" required>
+    <button type="submit">Adicionar Matéria</button>
+  </form>
+
+  <div id="materias"></div>
+
+  <script>
+    const materiasContainer = document.getElementById('materias');
+    const form = document.getElementById('add-materia-form');
+    let materias = JSON.parse(localStorage.getItem('materias')) || [];
+
+    const saveMaterias = () => {
+      localStorage.setItem('materias', JSON.stringify(materias));
+    };
+
+    const renderMaterias = () => {
+      materiasContainer.innerHTML = '';
+      materias.forEach((materia, index) => {
+        const materiaDiv = document.createElement('div');
+        materiaDiv.className = 'materia';
+
+        const title = document.createElement('h3');
+        title.textContent = `${materia.nome} - ${materia.horas} horas`;
+
+        const progress = document.createElement('div');
+        progress.className = 'progress';
+
+        for (let i = 0; i < materia.horas; i++) {
+          const box = document.createElement('div');
+          box.className = 'box';
+          if (materia.progresso > i) box.classList.add('completed');
+
+          box.addEventListener('click', () => {
+            if (materia.progresso <= i) {
+              materia.progresso++;
+            } else {
+              materia.progresso--;
+            }
+            saveMaterias();
+            renderMaterias();
+          });
+
+          progress.appendChild(box);
+        }
+
+        materiaDiv.appendChild(title);
+        materiaDiv.appendChild(progress);
+        materiasContainer.appendChild(materiaDiv);
+      });
+    };
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nome = document.getElementById('materia').value;
+      const horas = parseInt(document.getElementById('horas').value);
+      materias.push({ nome, horas, progresso: 0 });
+      saveMaterias();
+      renderMaterias();
+      form.reset();
+    });
+
+    renderMaterias();
+  </script>
+</body>
+</html>
